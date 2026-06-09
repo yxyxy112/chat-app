@@ -14,8 +14,10 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+    credentials: true
+  },
+  transports: ['websocket', 'polling'] // 支持降级
 });
 
 const JWT_SECRET = process.env.JWT_SECRET || 'chat-app-secret-key-2024';

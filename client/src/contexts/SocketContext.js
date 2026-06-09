@@ -18,7 +18,8 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
-    const newSocket = io(window.location.origin);
+    const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || window.location.origin;
+    const newSocket = io(SOCKET_URL);
     
     newSocket.on('connect', () => {
       console.log('Socket connected');

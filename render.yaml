@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: chat-app
+    env: node
+    buildCommand: npm install && cd client && npm install && npm run build && cd ..
+    startCommand: node server/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true

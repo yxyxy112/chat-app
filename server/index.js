@@ -17,7 +17,7 @@ const io = new Server(server, {
   }
 });
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || 'chat-app-secret-key-2024';
 const db = new Database();
 
 // 中间件

@@ -299,6 +299,42 @@ app.post('/api/qrcodes', authMiddleware, async (req, res) => {
   }
 });
 
+// 根据订单号查询二维码
+app.get('/api/qrcodes/order/:orderNumber', authMiddleware, async (req, res) => {
+  const { orderNumber } = req.params;
+  
+  try {
+    // TODO: 这里接入你的企业微信 API
+    // 示例：const response = await axios.get(`${WECHAT_QR_API}/order/${orderNumber}`);
+    
+    // 临时模拟数据 - 实际使用时替换为真实 API 调用
+    // 模拟：订单号包含 "TEST" 返回测试二维码
+    if (orderNumber.includes('TEST') || orderNumber.includes('test')) {
+      return res.json({
+        orderNumber,
+        imageUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=wechat-group-test',
+        description: '测试群：订单 ' + orderNumber + ' 的专属服务群',
+        expireTime: Date.now() + 7 * 24 * 60 * 60 * 1000 // 7天后过期
+      });
+    }
+    
+    // 实际接入时，调用你的 API：
+    /*
+    if (WECHAT_QR_API) {
+      const response = await axios.get(`${WECHAT_QR_API}/order/${orderNumber}`, {
+        headers: { Authorization: `Bearer ${WECHAT_API_TOKEN}` }
+      });
+      return res.json(response.data);
+    }
+    */
+    
+    res.status(404).json({ error: '未找到该订单的群二维码' });
+  } catch (err) {
+    console.error('查询订单二维码错误:', err);
+    res.status(500).json({ error: '查询失败' });
+  }
+});
+
 // ==================== Socket.IO 实时通信 ====================
 
 const onlineUsers = new Map(); // userId -> socketId

@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
-import { FiArrowLeft, FiSearch, FiX } from 'react-icons/fi';
+import { FiArrowLeft, FiSearch, FiX, FiMessageCircle } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Container = styled.div`
   min-height: 100vh;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 `;
 
 const Header = styled.div`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
   color: white;
   padding: 20px;
   display: flex;
@@ -40,131 +41,120 @@ const Title = styled.h1`
   font-weight: 600;
 `;
 
-const SearchContainer = styled.div`
-  padding: 16px 20px;
+const Content = styled.div`
+  padding: 40px 20px;
+  max-width: 600px;
+  margin: 0 auto;
+`;
+
+const SearchCard = styled.div`
   background: white;
-  border-bottom: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 `;
 
-const SearchBox = styled.div`
+const SearchIcon = styled.div`
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
   display: flex;
-  gap: 12px;
   align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  color: white;
+  font-size: 36px;
 `;
 
-const SearchInput = styled.input`
-  flex: 1;
-  padding: 12px 16px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 15px;
+const SearchTitle = styled.h2`
+  text-align: center;
+  color: #333;
+  margin-bottom: 8px;
+  font-size: 24px;
+`;
+
+const SearchSubtitle = styled.p`
+  text-align: center;
+  color: #666;
+  margin-bottom: 32px;
+  font-size: 14px;
+`;
+
+const InputGroup = styled.div`
+  margin-bottom: 20px;
+`;
+
+const InputLabel = styled.label`
+  display: block;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 14px;
+`;
+
+const OrderInput = styled.input`
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 18px;
+  text-align: center;
+  letter-spacing: 2px;
+  transition: border-color 0.2s;
 
   &:focus {
     outline: none;
     border-color: #667eea;
   }
+
+  &::placeholder {
+    color: #999;
+    letter-spacing: normal;
+  }
 `;
 
 const SearchButton = styled.button`
-  padding: 12px 20px;
-  background: #667eea;
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-weight: 500;
-
-  &:hover {
-    background: #5a6fd6;
-  }
-`;
-
-const Content = styled.div`
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-`;
-
-const CategorySection = styled.div`
-  margin-bottom: 24px;
-`;
-
-const CategoryTitle = styled.h2`
-  font-size: 18px;
-  color: #333;
-  margin-bottom: 16px;
-  padding-left: 8px;
-  border-left: 4px solid #667eea;
-`;
-
-const QRGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-`;
-
-const QRCard = styled.div`
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  justify-content: center;
+  gap: 8px;
   transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
   }
 `;
 
-const QRImage = styled.img`
-  width: 100%;
-  height: 280px;
-  object-fit: cover;
-  background: #f0f0f0;
-`;
-
-const QRInfo = styled.div`
-  padding: 16px;
-`;
-
-const QRName = styled.h3`
-  font-size: 16px;
-  color: #333;
-  margin-bottom: 8px;
-`;
-
-const QRDescription = styled.p`
+const ErrorMessage = styled.div`
+  background: #fff5f5;
+  color: #e53e3e;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 16px;
   font-size: 14px;
-  color: #666;
-  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
-const QRCategory = styled.span`
-  display: inline-block;
-  padding: 4px 12px;
-  background: #e8eaff;
-  color: #667eea;
-  border-radius: 20px;
-  font-size: 12px;
-  margin-top: 12px;
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 60px 20px;
-  color: #999;
-`;
-
-const EmptyIcon = styled.div`
-  font-size: 64px;
-  margin-bottom: 16px;
-`;
-
-// 模态框
+// 二维码弹窗
 const Modal = styled.div`
   position: fixed;
   top: 0;
@@ -181,95 +171,142 @@ const Modal = styled.div`
 
 const ModalContent = styled.div`
   background: white;
-  border-radius: 16px;
-  max-width: 500px;
+  border-radius: 20px;
+  max-width: 400px;
   width: 100%;
-  max-height: 90vh;
   overflow: hidden;
   position: relative;
+  animation: slideUp 0.3s ease;
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+
+const ModalHeader = styled.div`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  text-align: center;
+`;
+
+const ModalTitle = styled.h3`
+  font-size: 18px;
+  margin: 0;
+`;
+
+const ModalOrderNumber = styled.div`
+  font-size: 24px;
+  font-weight: 700;
+  margin-top: 8px;
+  opacity: 0.9;
+`;
+
+const ModalBody = styled.div`
+  padding: 24px;
+  text-align: center;
+`;
+
+const QRImage = styled.img`
+  width: 240px;
+  height: 240px;
+  object-fit: contain;
+  border-radius: 12px;
+  margin-bottom: 16px;
+`;
+
+const QRDescription = styled.p`
+  color: #666;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 8px;
+`;
+
+const QRHint = styled.p`
+  color: #999;
+  font-size: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
 `;
 
 const ModalClose = styled.button`
   position: absolute;
   top: 16px;
   right: 16px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.2);
   border: none;
   color: white;
   padding: 8px;
   border-radius: 50%;
   cursor: pointer;
-  z-index: 10;
+  transition: background 0.2s;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(255, 255, 255, 0.3);
   }
 `;
 
-const ModalImage = styled.img`
-  width: 100%;
-  max-height: 500px;
-  object-fit: contain;
-  background: #f5f5f5;
-`;
+const LoadingSpinner = styled.div`
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 
-const ModalInfo = styled.div`
-  padding: 20px;
-`;
-
-const ModalTitle = styled.h2`
-  font-size: 20px;
-  color: #333;
-  margin-bottom: 8px;
-`;
-
-const ModalDescription = styled.p`
-  color: #666;
-  line-height: 1.6;
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 `;
 
 function QRCodes() {
   const navigate = useNavigate();
-  const [qrcodes, setQrcodes] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedQR, setSelectedQR] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [orderNumber, setOrderNumber] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [qrResult, setQrResult] = useState(null);
 
-  useEffect(() => {
-    fetchQRCodes();
-  }, []);
+  const handleSearch = async () => {
+    if (!orderNumber.trim()) {
+      setError('请输入订单号码');
+      return;
+    }
 
-  const fetchQRCodes = async () => {
+    setError('');
+    setLoading(true);
+
     try {
-      const response = await axios.get('/api/qrcodes');
-      setQrcodes(response.data);
+      // 调用 API 查询订单对应的二维码
+      const response = await axios.get(`/api/qrcodes/order/${orderNumber.trim()}`);
+      
+      if (response.data) {
+        setQrResult(response.data);
+      } else {
+        setError('未找到该订单的群二维码');
+      }
     } catch (err) {
-      console.error('获取二维码失败:', err);
+      console.error('查询失败:', err);
+      setError(err.response?.data?.error || '查询失败，请稍后重试');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      fetchQRCodes();
-      return;
-    }
-    try {
-      const response = await axios.get(`/api/qrcodes/search?query=${searchQuery}`);
-      setQrcodes(response.data);
-    } catch (err) {
-      console.error('搜索失败:', err);
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
     }
   };
-
-  // 按分类分组
-  const groupedQRCodes = qrcodes.reduce((acc, qr) => {
-    const category = qr.category || '未分类';
-    if (!acc[category]) acc[category] = [];
-    acc[category].push(qr);
-    return acc;
-  }, {});
 
   return (
     <Container>
@@ -277,67 +314,55 @@ function QRCodes() {
         <BackButton onClick={() => navigate('/')}>
           <FiArrowLeft size={20} />
         </BackButton>
-        <Title>企业微信群二维码</Title>
+        <Title>加入企业微信群</Title>
       </Header>
 
-      <SearchContainer>
-        <SearchBox>
-          <SearchInput
-            placeholder="搜索群聊名称..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-          />
-          <SearchButton onClick={handleSearch}>
-            <FiSearch size={18} /> 搜索
-          </SearchButton>
-        </SearchBox>
-      </SearchContainer>
-
       <Content>
-        {loading ? (
-          <EmptyState>
-            <EmptyIcon>⏳</EmptyIcon>
-            <p>加载中...</p>
-          </EmptyState>
-        ) : qrcodes.length === 0 ? (
-          <EmptyState>
-            <EmptyIcon>📱</EmptyIcon>
-            <p>暂无群二维码</p>
-            <p style={{ fontSize: '14px', marginTop: '8px' }}>请联系管理员添加</p>
-          </EmptyState>
-        ) : (
-          Object.entries(groupedQRCodes).map(([category, items]) => (
-            <CategorySection key={category}>
-              <CategoryTitle>{category}</CategoryTitle>
-              <QRGrid>
-                {items.map(qr => (
-                  <QRCard key={qr.id} onClick={() => setSelectedQR(qr)}>
-                    <QRImage src={qr.image_url} alt={qr.name} />
-                    <QRInfo>
-                      <QRName>{qr.name}</QRName>
-                      <QRDescription>{qr.description}</QRDescription>
-                      <QRCategory>{qr.category}</QRCategory>
-                    </QRInfo>
-                  </QRCard>
-                ))}
-              </QRGrid>
-            </CategorySection>
-          ))
-        )}
+        <SearchCard>
+          <SearchIcon>
+            <FiMessageCircle />
+          </SearchIcon>
+          <SearchTitle>查询群二维码</SearchTitle>
+          <SearchSubtitle>输入您的订单号码，获取专属企业微信群二维码</SearchSubtitle>
+
+          <InputGroup>
+            <InputLabel>订单号码</InputLabel>
+            <OrderInput
+              placeholder="请输入订单号"
+              value={orderNumber}
+              onChange={(e) => setOrderNumber(e.target.value)}
+              onKeyPress={handleKeyPress}
+              maxLength={20}
+            />
+          </InputGroup>
+
+          <SearchButton onClick={handleSearch} disabled={loading}>
+            {loading ? <LoadingSpinner /> : <><FiSearch size={18} /> 查询二维码</>}
+          </SearchButton>
+
+          {error && (
+            <ErrorMessage>
+              ⚠️ {error}
+            </ErrorMessage>
+          )}
+        </SearchCard>
       </Content>
 
-      {selectedQR && (
-        <Modal onClick={() => setSelectedQR(null)}>
+      {qrResult && (
+        <Modal onClick={() => setQrResult(null)}>
           <ModalContent onClick={e => e.stopPropagation()}>
-            <ModalClose onClick={() => setSelectedQR(null)}>
+            <ModalClose onClick={() => setQrResult(null)}>
               <FiX size={20} />
             </ModalClose>
-            <ModalImage src={selectedQR.image_url} alt={selectedQR.name} />
-            <ModalInfo>
-              <ModalTitle>{selectedQR.name}</ModalTitle>
-              <ModalDescription>{selectedQR.description}</ModalDescription>
-            </ModalInfo>
+            <ModalHeader>
+              <ModalTitle>订单专属服务群</ModalTitle>
+              <ModalOrderNumber>#{qrResult.orderNumber || orderNumber}</ModalOrderNumber>
+            </ModalHeader>
+            <ModalBody>
+              <QRImage src={qrResult.imageUrl} alt="群二维码" />
+              <QRDescription>{qrResult.description || '请使用微信扫描上方二维码加入群聊'}</QRDescription>
+              <QRHint>💡 提示：二维码7天内有效，请尽快加入</QRHint>
+            </ModalBody>
           </ModalContent>
         </Modal>
       )}

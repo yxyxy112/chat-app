@@ -6,6 +6,7 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
+const axios = require('axios');
 const Database = require('./database');
 
 const app = express();
@@ -234,12 +235,23 @@ app.get('/api/friends', authMiddleware, async (req, res) => {
 
 // ==================== 企业微信二维码 API ====================
 
+// TODO: 配置你的企业微信二维码 API 接口
+const WECHAT_QR_API = process.env.WECHAT_QR_API || null;
+
 // 获取所有群聊二维码
 app.get('/api/qrcodes', authMiddleware, async (req, res) => {
   try {
+    // 如果有外部 API，优先使用外部 API
+    if (WECHAT_QR_API) {
+      // const response = await axios.get(WECHAT_QR_API);
+      // return res.json(response.data);
+    }
+    
+    // 否则使用本地数据库
     const qrcodes = await db.getAllQRCodes();
     res.json(qrcodes);
   } catch (err) {
+    console.error('获取二维码错误:', err);
     res.status(500).json({ error: '获取失败' });
   }
 });
@@ -248,9 +260,17 @@ app.get('/api/qrcodes', authMiddleware, async (req, res) => {
 app.get('/api/qrcodes/search', authMiddleware, async (req, res) => {
   const { query } = req.query;
   try {
+    // 如果有外部 API，优先使用外部 API
+    if (WECHAT_QR_API) {
+      // const response = await axios.get(`${WECHAT_QR_API}/search?q=${query}`);
+      // return res.json(response.data);
+    }
+    
+    // 否则使用本地数据库
     const qrcodes = await db.searchQRCodes(query);
     res.json(qrcodes);
   } catch (err) {
+    console.error('搜索二维码错误:', err);
     res.status(500).json({ error: '搜索失败' });
   }
 });
@@ -270,6 +290,7 @@ app.post('/api/qrcodes', authMiddleware, async (req, res) => {
     });
     res.json({ success: true });
   } catch (err) {
+    console.error('添加二维码错误:', err);
     res.status(500).json({ error: '添加失败' });
   }
 });

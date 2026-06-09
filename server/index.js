@@ -430,6 +430,17 @@ io.on('connection', (socket) => {
   });
 });
 
+// 生产环境：提供静态文件
+if (process.env.NODE_ENV === 'production') {
+  // 前端构建文件
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  
+  // 所有其他路由返回 index.html（支持 React Router）
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build/index.html'));
+  });
+}
+
 // 初始化数据库并启动服务器
 const PORT = process.env.PORT || 3001;
 

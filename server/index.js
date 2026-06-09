@@ -17,7 +17,9 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
     credentials: true
   },
-  transports: ['websocket', 'polling'] // 支持降级
+  transports: ['polling', 'websocket'], // 优先 polling 以兼容 Render
+  pingTimeout: 60000,
+  pingInterval: 25000
 });
 
 const JWT_SECRET = process.env.JWT_SECRET || 'chat-app-secret-key-2024';
@@ -430,6 +432,11 @@ io.on('connection', (socket) => {
       console.log(`用户 ${socket.userId} 离线`);
     }
   });
+});
+
+// 健康检查端点（Render 需要）
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // 生产环境：提供静态文件
